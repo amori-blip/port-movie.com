@@ -5,28 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>動画工房 port — 映像クリエイター / 川越</title>
   <meta name="description" content="埼玉・川越を拠点に活動するフリーランス映像クリエイター。動画制作・撮影・イラスト・印刷物デザインなど幅広く対応します。">
-
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" href="favicon.png">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+JP:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 
   <style>
-    /* ─── CSS Variables ─── */
+    /* ─── Variables ─── */
     :root {
-      --bg:        #090909;
-      --bg2:       #111111;
-      --bg3:       #161616;
-      --gold:      #C9A86C;
-      --gold-dim:  #8a6f3f;
-      --text:      #E8E2D9;
-      --text-muted:#8a8278;
-      --border:    #2a2520;
+      --bg:         #080808;
+      --bg2:        #0f0f0f;
+      --bg3:        #161616;
+      --bg4:        #1c1c1c;
+      --gold:       #C9A86C;
+      --gold-dim:   #8a6f3f;
+      --gold-light: #e6c98a;
+      --text:       #EAE4DB;
+      --text-muted: #8a8278;
+      --text-faint: #4a4540;
+      --border:     #252020;
+      --border2:    #2e2825;
       --ff-display: 'Cormorant Garamond', 'Noto Serif JP', serif;
       --ff-serif:   'Noto Serif JP', serif;
       --ff-num:     'Bebas Neue', sans-serif;
+      --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.87, 0, 0.13, 1);
     }
 
     /* ─── Reset ─── */
@@ -40,30 +44,90 @@
       line-height: 1.8;
       overflow-x: hidden;
     }
+    body.menu-open { overflow: hidden; }
     a { color: inherit; text-decoration: none; }
     img { display: block; max-width: 100%; }
+    button { cursor: pointer; }
+
+    /* ─── Custom Scrollbar ─── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+    /* ─── Scroll Progress ─── */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      z-index: 10000;
+      transition: width 0.08s linear;
+    }
 
     /* ─── Grain overlay ─── */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
-      z-index: 9999;
-      opacity: 0.35;
+      z-index: 9998;
+      opacity: 0.4;
+      mix-blend-mode: overlay;
     }
 
-    /* ─── Scroll animation ─── */
+    /* ─── Loading Screen ─── */
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s var(--ease-out), visibility 0.6s;
+    }
+    .loading-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loading-inner {
+      text-align: center;
+    }
+    .loading-logo-text {
+      font-family: var(--ff-display);
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      opacity: 0;
+      animation: loadFadeIn 0.5s ease 0.1s forwards;
+    }
+    .loading-bar-wrap {
+      margin-top: 1.5rem;
+      width: 120px;
+      height: 1px;
+      background: var(--border2);
+      overflow: hidden;
+    }
+    .loading-bar {
+      height: 100%;
+      background: var(--gold);
+      width: 0%;
+      animation: loadBar 0.8s var(--ease-out) 0.3s forwards;
+    }
+    @keyframes loadFadeIn { to { opacity: 1; } }
+    @keyframes loadBar { to { width: 100%; } }
+
+    /* ─── Scroll reveal ─── */
     .reveal {
       opacity: 0;
-      transform: translateY(32px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
+      transform: translateY(36px);
+      transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
     }
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
-    }
+    .reveal.visible { opacity: 1; transform: none; }
     .reveal-delay-1 { transition-delay: 0.1s; }
     .reveal-delay-2 { transition-delay: 0.2s; }
     .reveal-delay-3 { transition-delay: 0.3s; }
@@ -73,69 +137,170 @@
     header {
       position: fixed;
       top: 0; left: 0; right: 0;
-      z-index: 100;
+      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.25rem 3rem;
-      transition: background 0.4s;
+      padding: 1.4rem 3rem;
+      transition: background 0.5s, padding 0.4s, border-color 0.5s;
+      border-bottom: 1px solid transparent;
     }
     header.scrolled {
-      background: rgba(9,9,9,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
+      background: rgba(8, 8, 8, 0.94);
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+      border-bottom-color: var(--border);
+      padding: 1rem 3rem;
     }
+
     .logo {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.8rem;
+      text-decoration: none;
     }
-    .logo svg { width: 36px; height: 36px; }
+    .logo svg { width: 34px; height: 34px; flex-shrink: 0; }
     .logo-text {
       font-family: var(--ff-display);
       font-weight: 300;
-      font-size: 1.05rem;
-      letter-spacing: 0.08em;
-      line-height: 1.2;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      line-height: 1.25;
     }
     .logo-text span {
       display: block;
-      font-size: 0.7rem;
+      font-size: 0.62rem;
       color: var(--text-muted);
-      letter-spacing: 0.2em;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
     }
-    nav {
+
+    /* Desktop nav */
+    .nav-desktop {
       display: flex;
       align-items: center;
       gap: 2.5rem;
     }
-    nav a {
-      font-size: 0.72rem;
+    .nav-desktop a {
+      font-size: 0.7rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--text-muted);
       transition: color 0.2s;
+      position: relative;
     }
-    nav a:hover { color: var(--gold); }
+    .nav-desktop a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0; right: 0;
+      height: 1px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s var(--ease-out);
+    }
+    .nav-desktop a:hover { color: var(--gold); }
+    .nav-desktop a:hover::after,
+    .nav-desktop a.active::after { transform: scaleX(1); transform-origin: left; }
+    .nav-desktop a.active { color: var(--gold); }
     .nav-cta {
-      font-size: 0.72rem;
-      letter-spacing: 0.15em;
+      font-size: 0.7rem !important;
+      letter-spacing: 0.15em !important;
       text-transform: uppercase;
       border: 1px solid var(--gold-dim);
       color: var(--gold) !important;
       padding: 0.55rem 1.4rem;
-      transition: background 0.2s, color 0.2s !important;
+      transition: background 0.25s, color 0.25s, border-color 0.25s !important;
     }
+    .nav-cta::after { display: none !important; }
     .nav-cta:hover {
       background: var(--gold);
       color: var(--bg) !important;
+      border-color: var(--gold);
     }
     .header-sns {
       color: var(--text-muted);
       transition: color 0.2s;
+      display: flex;
+      align-items: center;
     }
     .header-sns:hover { color: var(--gold); }
+
+    /* Hamburger */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      padding: 6px;
+      z-index: 1100;
+      position: relative;
+    }
+    .menu-toggle span {
+      display: block;
+      width: 100%;
+      height: 1px;
+      background: var(--text);
+      transition: transform 0.4s var(--ease-out), opacity 0.3s, background 0.2s;
+      transform-origin: center;
+    }
+    .menu-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .menu-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .menu-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    /* Mobile nav overlay */
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 8, 8, 0.97);
+      backdrop-filter: blur(20px);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      opacity: 0;
+      transition: opacity 0.4s var(--ease-out);
+      pointer-events: none;
+    }
+    .nav-mobile.open {
+      display: flex;
+      opacity: 1;
+      pointer-events: all;
+    }
+    .nav-mobile a {
+      font-family: var(--ff-display);
+      font-size: 2.4rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: none;
+    }
+    .nav-mobile.open a {
+      animation: mobileNavIn 0.5s var(--ease-out) forwards;
+    }
+    .nav-mobile.open a:nth-child(1) { animation-delay: 0.05s; }
+    .nav-mobile.open a:nth-child(2) { animation-delay: 0.10s; }
+    .nav-mobile.open a:nth-child(3) { animation-delay: 0.15s; }
+    .nav-mobile.open a:nth-child(4) { animation-delay: 0.20s; }
+    .nav-mobile.open a:nth-child(5) { animation-delay: 0.25s; }
+    .nav-mobile a:hover { color: var(--gold); }
+    .nav-mobile-sns {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+    @keyframes mobileNavIn {
+      to { transform: none; opacity: 1; }
+    }
 
     /* ─── Hero ─── */
     #hero {
@@ -150,222 +315,408 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 60% 80% at 70% 50%, rgba(201,168,108,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(201,168,108,0.04) 0%, transparent 50%);
+        radial-gradient(ellipse 55% 75% at 68% 48%, rgba(201,168,108,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 35% 55% at 18% 82%, rgba(201,168,108,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
     }
-    .hero-line {
+    .hero-grid-lines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .hero-grid-lines::before {
+      content: '';
       position: absolute;
       right: 0; top: 0; bottom: 0;
-      width: 45%;
+      width: 42%;
       border-left: 1px solid var(--border);
+    }
+    .hero-grid-lines::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border) 30%, var(--border) 70%, transparent);
     }
     .hero-content {
       position: relative;
       z-index: 1;
-      max-width: 700px;
+      max-width: 720px;
     }
     .hero-label {
-      font-size: 0.68rem;
-      letter-spacing: 0.35em;
+      font-size: 0.65rem;
+      letter-spacing: 0.38em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 2rem;
+      margin-bottom: 2.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       opacity: 0;
-      animation: fadeUp 0.8s ease 0.2s forwards;
+      animation: heroIn 0.9s var(--ease-out) 0.3s forwards;
+    }
+    .hero-label::before {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: var(--gold);
+      flex-shrink: 0;
     }
     .hero-title {
       font-family: var(--ff-display);
       font-weight: 300;
-      font-size: clamp(4rem, 10vw, 9rem);
-      line-height: 0.9;
-      letter-spacing: -0.02em;
-      margin-bottom: 1.5rem;
+      font-size: clamp(4.5rem, 11vw, 10rem);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      margin-bottom: 1.8rem;
       opacity: 0;
-      animation: fadeUp 1s ease 0.4s forwards;
+      animation: heroIn 1s var(--ease-out) 0.5s forwards;
     }
     .hero-title em {
       font-style: italic;
       color: var(--gold);
+      display: inline-block;
     }
     .hero-subtitle {
-      font-size: clamp(0.85rem, 1.5vw, 1rem);
+      font-size: clamp(0.82rem, 1.4vw, 0.95rem);
       color: var(--text-muted);
-      letter-spacing: 0.05em;
-      line-height: 2;
-      margin-bottom: 3rem;
-      max-width: 460px;
+      letter-spacing: 0.04em;
+      line-height: 2.1;
+      margin-bottom: 3.5rem;
+      max-width: 440px;
       opacity: 0;
-      animation: fadeUp 0.8s ease 0.6s forwards;
+      animation: heroIn 0.9s var(--ease-out) 0.7s forwards;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      opacity: 0;
+      animation: heroIn 0.9s var(--ease-out) 0.9s forwards;
     }
     .hero-cta {
       display: inline-flex;
       align-items: center;
-      gap: 1rem;
-      font-size: 0.75rem;
-      letter-spacing: 0.2em;
+      gap: 0.75rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--bg);
       background: var(--gold);
       padding: 1rem 2.5rem;
-      transition: opacity 0.2s;
-      opacity: 0;
-      animation: fadeUp 0.8s ease 0.8s forwards;
+      transition: background 0.25s, color 0.25s;
     }
-    .hero-cta:hover { opacity: 0.85; }
-    .hero-cta svg { width: 14px; height: 14px; }
-    .hero-scroll {
+    .hero-cta:hover {
+      background: var(--gold-light);
+    }
+    .hero-cta svg { width: 13px; height: 13px; }
+    .hero-link {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      border-bottom: 1px solid var(--border2);
+      padding-bottom: 1px;
+    }
+    .hero-link:hover { color: var(--gold); border-bottom-color: var(--gold-dim); }
+    .hero-scroll-hint {
       position: absolute;
       bottom: 2.5rem;
       left: 3rem;
       display: flex;
       align-items: center;
       gap: 1rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.25em;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: var(--text-muted);
+      color: var(--text-faint);
       opacity: 0;
-      animation: fadeUp 0.8s ease 1.2s forwards;
+      animation: heroIn 0.9s var(--ease-out) 1.3s forwards;
     }
-    .hero-scroll-line {
-      width: 40px;
+    .hero-scroll-bar {
+      width: 36px;
       height: 1px;
-      background: var(--text-muted);
-      animation: scrollLine 2s ease-in-out 1.5s infinite;
+      background: var(--text-faint);
+      position: relative;
+      overflow: hidden;
     }
-    @keyframes scrollLine {
-      0%, 100% { transform: scaleX(1); opacity: 0.5; }
-      50% { transform: scaleX(0.4); transform-origin: left; opacity: 1; }
+    .hero-scroll-bar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gold-dim);
+      animation: scrollSlide 2.5s ease-in-out 2s infinite;
+    }
+    @keyframes scrollSlide {
+      0% { left: -100%; }
+      50% { left: 0%; }
+      100% { left: 100%; }
     }
     .hero-num {
       position: absolute;
-      right: 3rem;
-      bottom: 2rem;
+      right: 2rem;
+      bottom: -1rem;
       font-family: var(--ff-num);
-      font-size: clamp(8rem, 18vw, 20rem);
+      font-size: clamp(10rem, 22vw, 24rem);
       line-height: 1;
       color: transparent;
-      -webkit-text-stroke: 1px rgba(201,168,108,0.08);
+      -webkit-text-stroke: 1px rgba(201,168,108,0.06);
       pointer-events: none;
       user-select: none;
+      letter-spacing: 0.02em;
     }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
+    @keyframes heroIn {
+      from { opacity: 0; transform: translateY(28px); }
       to   { opacity: 1; transform: none; }
     }
 
-    /* ─── Section common ─── */
-    section { position: relative; }
-    .section-inner {
+    /* ─── Stats Strip ─── */
+    .stats-strip {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stats-inner {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 7rem 3rem;
-    }
-    .section-header {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 4rem;
-    }
-    .section-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 0.5rem;
-    }
-    .section-title {
-      font-family: var(--ff-display);
-      font-weight: 300;
-      font-size: clamp(3rem, 6vw, 5.5rem);
-      line-height: 1;
-      letter-spacing: 0.02em;
-    }
-    .section-desc {
-      max-width: 360px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      line-height: 2;
-      text-align: right;
-    }
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* ─── Work ─── */
-    #work { background: var(--bg); }
-    .work-grid {
+      padding: 0 3rem;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1px;
-      background: var(--border);
-      margin-top: 3rem;
+      grid-template-columns: repeat(4, 1fr);
     }
-    .work-item {
-      position: relative;
-      aspect-ratio: 16/9;
-      background: var(--bg2);
-      overflow: hidden;
-      cursor: pointer;
+    .stat-item {
+      padding: 2.5rem 0;
+      border-right: 1px solid var(--border);
+      padding-left: 2rem;
     }
-    .work-item img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.6s ease, filter 0.6s ease;
-      filter: brightness(0.7) saturate(0.8);
+    .stat-item:first-child { padding-left: 0; border-left: none; }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--ff-num);
+      font-size: 2.8rem;
+      line-height: 1;
+      color: var(--gold);
+      margin-bottom: 0.3rem;
     }
-    .work-item-placeholder {
-      width: 100%; height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg3);
-      transition: background 0.3s;
-    }
-    .work-item-placeholder span {
-      font-size: 0.6rem;
+    .stat-label {
+      font-size: 0.62rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--text-muted);
     }
-    .work-item:hover .work-item-placeholder { background: var(--bg2); }
-    .work-overlay {
+
+    /* ─── Section Common ─── */
+    section { position: relative; }
+    .section-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 8rem 3rem;
+    }
+    .section-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 3rem;
+      margin-bottom: 5rem;
+      padding-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .section-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--gold);
+    }
+    .section-title {
+      font-family: var(--ff-display);
+      font-weight: 300;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 0.95;
+      letter-spacing: 0.01em;
+    }
+    .section-desc {
+      max-width: 300px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 2.1;
+      text-align: right;
+    }
+
+    /* ─── Work ─── */
+    #work { background: var(--bg); }
+    .work-sub-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 2rem;
+      margin-top: 4rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .work-sub-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Video Grid */
+    .work-video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .work-video-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .video-wrapper {
+      position: relative;
+      padding-bottom: 56.25%;
+      background: var(--bg3);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    /* Click-to-play thumbnail */
+    .video-wrapper .video-thumb {
       position: absolute;
       inset: 0;
-      background: rgba(9,9,9,0.7);
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.75) saturate(0.8);
+      transition: filter 0.4s, transform 0.5s var(--ease-out);
+    }
+    .video-wrapper:hover .video-thumb {
+      filter: brightness(0.55) saturate(0.6);
+      transform: scale(1.03);
+    }
+    .video-play-btn {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(201,168,108,0.15);
+      border: 1px solid rgba(201,168,108,0.4);
       display: flex;
-      align-items: flex-end;
-      padding: 1.5rem;
-      opacity: 0;
-      transition: opacity 0.4s;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s, border-color 0.3s, transform 0.3s;
+      backdrop-filter: blur(4px);
     }
-    .work-item:hover .work-overlay { opacity: 1; }
-    .work-item:hover img { transform: scale(1.05); filter: brightness(0.5) saturate(0.6); }
-    .work-overlay-text {
+    .video-wrapper:hover .video-play-btn {
+      background: rgba(201,168,108,0.25);
+      border-color: var(--gold);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    .video-play-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--gold);
+      margin-left: 3px;
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .work-video-label {
       font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--gold);
-      border-top: 1px solid var(--gold-dim);
-      padding-top: 0.5rem;
-    }
-    .work-more {
-      display: block;
-      margin: 3rem auto 0;
-      font-size: 0.72rem;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--text-muted);
-      border: 1px solid var(--border);
-      padding: 1rem 3rem;
-      width: fit-content;
-      transition: border-color 0.2s, color 0.2s;
+      padding-left: 0.25rem;
     }
-    .work-more:hover {
-      border-color: var(--gold-dim);
+
+    /* Still Grid */
+    .work-still-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .work-still-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .work-still-img-wrap {
+      overflow: hidden;
+      background: var(--bg3);
+      position: relative;
+    }
+    .work-still-img-wrap img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      filter: brightness(0.8) saturate(0.85);
+      transition: transform 0.6s var(--ease-out), filter 0.4s;
+      display: block;
+    }
+    .work-still-item:hover .work-still-img-wrap img {
+      transform: scale(1.05);
+      filter: brightness(1) saturate(1);
+    }
+    .work-still-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding-left: 0.25rem;
+    }
+
+    /* Private works box */
+    .work-private {
+      margin-top: 4rem;
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--gold-dim);
+      padding: 2.5rem 3rem;
+      background: var(--bg2);
+    }
+    .work-private-title {
+      font-size: 0.62rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
       color: var(--gold);
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .work-private-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem 3rem;
+    }
+    .work-private-item {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.9;
+    }
+    .work-private-item strong {
+      color: var(--gold);
+      font-weight: 400;
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.2rem;
     }
 
     /* ─── Service ─── */
@@ -375,54 +726,54 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 1px;
       background: var(--border);
-      margin-top: 1rem;
     }
     .service-card {
       background: var(--bg2);
-      padding: 3rem;
-      transition: background 0.3s;
+      padding: 3.5rem;
       position: relative;
       overflow: hidden;
+      transition: background 0.35s;
     }
     .service-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0;
-      width: 2px;
-      height: 0;
-      background: var(--gold);
-      transition: height 0.4s ease;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+      transition: width 0.5s var(--ease-out);
     }
-    .service-card:hover::before { height: 100%; }
+    .service-card:hover::before { width: 100%; }
     .service-card:hover { background: var(--bg3); }
     .service-num {
       font-family: var(--ff-num);
-      font-size: 4rem;
+      font-size: 5rem;
       line-height: 1;
-      color: var(--border);
+      color: var(--border2);
       margin-bottom: 1.5rem;
-      transition: color 0.3s;
+      transition: color 0.35s;
+      letter-spacing: 0.02em;
     }
-    .service-card:hover .service-num { color: rgba(201,168,108,0.15); }
+    .service-card:hover .service-num { color: rgba(201,168,108,0.12); }
     .service-name {
       font-family: var(--ff-display);
-      font-size: 1.6rem;
+      font-size: 1.7rem;
       font-weight: 400;
-      letter-spacing: 0.05em;
-      margin-bottom: 1rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.5rem;
       color: var(--text);
     }
     .service-en {
-      font-size: 0.62rem;
-      letter-spacing: 0.3em;
+      font-size: 0.6rem;
+      letter-spacing: 0.32em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
     .service-desc {
       font-size: 0.82rem;
       color: var(--text-muted);
-      line-height: 2;
+      line-height: 2.1;
     }
 
     /* ─── Skill ─── */
@@ -430,7 +781,7 @@
     .skill-layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5rem;
+      gap: 6rem;
       align-items: start;
     }
     .skill-categories {
@@ -439,11 +790,11 @@
       gap: 2.5rem;
     }
     .skill-cat-label {
-      font-size: 0.62rem;
-      letter-spacing: 0.3em;
+      font-size: 0.6rem;
+      letter-spacing: 0.32em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.9rem;
     }
     .skill-cat-items {
       display: flex;
@@ -451,50 +802,42 @@
       gap: 0.5rem;
     }
     .skill-tag {
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      border: 1px solid var(--border);
-      padding: 0.35rem 0.85rem;
+      font-size: 0.73rem;
+      letter-spacing: 0.08em;
+      border: 1px solid var(--border2);
+      padding: 0.38rem 0.9rem;
       color: var(--text-muted);
-      transition: border-color 0.2s, color 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
     }
     .skill-tag:hover {
       border-color: var(--gold-dim);
       color: var(--gold);
+      background: rgba(201,168,108,0.04);
     }
-    .skill-profile-side {
-      padding-top: 1rem;
+    .skill-info-side {
+      padding-top: 0.5rem;
     }
-    .skill-quote {
-      font-family: var(--ff-display);
-      font-size: 1.5rem;
-      font-style: italic;
-      font-weight: 300;
-      line-height: 1.6;
-      color: var(--text-muted);
-      border-left: 2px solid var(--gold-dim);
-      padding-left: 1.5rem;
-      margin-bottom: 3rem;
-    }
-    .skill-items-vertical { display: flex; flex-direction: column; gap: 0; }
+    .skill-items-vertical { display: flex; flex-direction: column; }
     .skill-item-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 0;
+      padding: 1.1rem 0;
       border-bottom: 1px solid var(--border);
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
+      gap: 1rem;
     }
     .skill-item-row:last-child { border-bottom: none; }
-    .skill-item-name { color: var(--text); }
+    .skill-item-name { color: var(--text); flex-shrink: 0; }
+    .skill-item-val { text-align: right; }
 
     /* ─── Profile ─── */
     #profile { background: var(--bg2); }
     .profile-layout {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
+      grid-template-columns: 1fr 1.1fr;
+      gap: 7rem;
       align-items: center;
     }
     .profile-img-wrap {
@@ -503,47 +846,56 @@
       overflow: hidden;
     }
     .profile-img-wrap img {
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      filter: grayscale(20%) brightness(0.85);
+      filter: grayscale(15%) brightness(0.82);
+      transition: filter 0.5s;
+    }
+    .profile-img-wrap:hover img {
+      filter: grayscale(0%) brightness(0.9);
     }
     .profile-img-frame {
       position: absolute;
-      inset: 1rem;
-      border: 1px solid rgba(201,168,108,0.2);
+      inset: 1.2rem;
+      border: 1px solid rgba(201,168,108,0.18);
       pointer-events: none;
     }
-    .profile-img-placeholder {
-      width: 100%; height: 100%;
-      background: var(--bg3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .profile-img-frame::before,
+    .profile-img-frame::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: var(--gold);
+      border-style: solid;
     }
-    .profile-img-placeholder span {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: var(--text-muted);
+    .profile-img-frame::before {
+      top: -1px; left: -1px;
+      border-width: 1px 0 0 1px;
     }
-    .profile-content {}
+    .profile-img-frame::after {
+      bottom: -1px; right: -1px;
+      border-width: 0 1px 1px 0;
+    }
     .profile-name-ja {
       font-family: var(--ff-display);
-      font-size: 2.5rem;
+      font-size: 2.8rem;
       font-weight: 300;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.25rem;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.3rem;
+      margin-top: 1.5rem;
     }
     .profile-name-en {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       letter-spacing: 0.35em;
       text-transform: uppercase;
       color: var(--gold);
       margin-bottom: 2.5rem;
     }
     .profile-text {
-      font-size: 0.88rem;
-      line-height: 2.2;
+      font-size: 0.86rem;
+      line-height: 2.3;
       color: var(--text-muted);
       margin-bottom: 2.5rem;
     }
@@ -554,76 +906,85 @@
       align-items: center;
     }
     .profile-link {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
+      font-size: 0.63rem;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 0.5rem;
       transition: color 0.2s;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 1px;
     }
-    .profile-link:hover { color: var(--gold); }
+    .profile-link:hover {
+      color: var(--gold);
+      border-bottom-color: var(--gold-dim);
+    }
 
     /* ─── Contact ─── */
     #contact { background: var(--bg); }
     .contact-layout {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      gap: 6rem;
+      gap: 7rem;
     }
-    .contact-info {}
     .contact-notice {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: var(--text-muted);
-      line-height: 2;
-      margin-bottom: 2rem;
+      line-height: 2.1;
+      margin-bottom: 2.5rem;
     }
     .contact-info-item {
       display: flex;
       flex-direction: column;
+      gap: 0.2rem;
       margin-bottom: 1.5rem;
     }
     .contact-info-label {
-      font-size: 0.6rem;
-      letter-spacing: 0.25em;
+      font-size: 0.58rem;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
       color: var(--gold);
-      margin-bottom: 0.3rem;
     }
     .contact-info-value {
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
 
-    /* form */
+    /* Form */
     .contact-form { display: flex; flex-direction: column; gap: 1.5rem; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-    .form-group.full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 0.45rem; }
     .form-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text-muted);
     }
-    .form-label .req { color: var(--gold); margin-left: 0.3rem; }
+    .form-label .req { color: var(--gold); margin-left: 0.25rem; }
     .form-input, .form-select, .form-textarea {
       background: var(--bg2);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border2);
       color: var(--text);
       font-family: var(--ff-serif);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       padding: 0.85rem 1rem;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.25s, background 0.25s;
       width: 100%;
+      appearance: none;
     }
+    .form-input::placeholder,
+    .form-textarea::placeholder { color: var(--text-faint); }
     .form-input:focus,
     .form-select:focus,
-    .form-textarea:focus { border-color: var(--gold-dim); }
-    .form-textarea { resize: vertical; min-height: 120px; }
-    .form-select { appearance: none; cursor: pointer; }
+    .form-textarea:focus {
+      border-color: var(--gold-dim);
+      background: var(--bg3);
+    }
+    .form-textarea { resize: vertical; min-height: 130px; }
+    .form-select { cursor: pointer; }
     .form-select option { background: var(--bg2); }
     .form-check {
       display: flex;
@@ -635,11 +996,9 @@
       width: 16px; height: 16px;
       accent-color: var(--gold);
       cursor: pointer;
+      flex-shrink: 0;
     }
-    .form-check-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
+    .form-check-label { font-size: 0.78rem; color: var(--text-muted); }
     .form-check-label a { color: var(--gold); text-decoration: underline; }
     .form-submit {
       align-self: flex-start;
@@ -647,182 +1006,148 @@
       color: var(--bg);
       border: none;
       font-family: var(--ff-serif);
-      font-size: 0.72rem;
-      letter-spacing: 0.25em;
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
-      padding: 1rem 3rem;
-      cursor: pointer;
-      transition: opacity 0.2s;
+      padding: 1.1rem 3rem;
+      transition: background 0.25s, opacity 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
-    .form-submit:hover { opacity: 0.85; }
+    .form-submit:hover { background: var(--gold-light); }
+    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-submit svg { width: 13px; height: 13px; }
+    .form-success {
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+    .form-success-title {
+      font-family: var(--ff-display);
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      letter-spacing: 0.12em;
+    }
+    .form-success-msg {
+      font-size: 0.88rem;
+      line-height: 2.3;
+      color: var(--text-muted);
+    }
 
     /* ─── Footer ─── */
     footer {
       background: var(--bg2);
       border-top: 1px solid var(--border);
-      padding: 3rem;
-      display: flex;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      justify-content: space-between;
+      gap: 2rem;
     }
     .footer-logo {
       font-family: var(--ff-display);
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 300;
       letter-spacing: 0.1em;
     }
-    .footer-copy {
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      color: var(--text-muted);
+    .footer-links {
+      display: flex;
+      gap: 2rem;
     }
-    .footer-links { display: flex; gap: 1.5rem; }
     .footer-links a {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--text-muted);
       transition: color 0.2s;
     }
     .footer-links a:hover { color: var(--gold); }
+    .footer-copy {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--text-faint);
+      text-align: right;
+    }
+
+    /* ─── Scroll to Top ─── */
+    .scroll-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 44px;
+      height: 44px;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s, transform 0.3s, color 0.2s, border-color 0.2s, background 0.2s;
+      z-index: 500;
+    }
+    .scroll-top.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .scroll-top:hover {
+      color: var(--gold);
+      border-color: var(--gold-dim);
+      background: var(--bg3);
+    }
 
     /* ─── Mobile ─── */
-    @media (max-width: 768px) {
-      header { padding: 1rem 1.5rem; }
-      nav { gap: 1.2rem; }
-      nav a:not(.nav-cta) { display: none; }
-      .section-inner { padding: 5rem 1.5rem; }
-      #hero { padding: 0 1.5rem; }
-      .hero-scroll { left: 1.5rem; }
-      .hero-num { display: none; }
-      .section-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-      .section-desc { text-align: left; }
-      .work-grid { grid-template-columns: repeat(2, 1fr); }
-      .service-grid { grid-template-columns: 1fr; }
-      .skill-layout { grid-template-columns: 1fr; gap: 3rem; }
+    @media (max-width: 1024px) {
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .stat-item:nth-child(3) { border-left: none; padding-left: 0; border-top: 1px solid var(--border); }
+      .stat-item:nth-child(4) { border-right: none; border-top: 1px solid var(--border); }
+    }
+    @media (max-width: 900px) {
+      .skill-layout { grid-template-columns: 1fr; gap: 3.5rem; }
       .profile-layout { grid-template-columns: 1fr; gap: 3rem; }
       .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
-      .form-row { grid-template-columns: 1fr; }
-      footer { flex-direction: column; gap: 1.5rem; text-align: center; }
-      .footer-links { justify-content: center; }
-    }
-
-    /* ─── Work: 動画・静止画グリッド ─── */
-    .work-sub-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.35em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1.5rem;
-      margin-top: 4rem;
-    }
-    .work-video-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .work-video-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .video-wrapper {
-      position: relative;
-      padding-bottom: 56.25%;
-      height: 0;
-      overflow: hidden;
-      background: var(--bg2);
-    }
-    .video-wrapper iframe {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      border: none;
-    }
-    .work-video-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-align: center;
-    }
-    .work-still-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    .work-still-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    .work-still-img-wrap {
-      overflow: hidden;
-      background: var(--bg2);
-    }
-    .work-still-img-wrap img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      filter: brightness(0.85);
-      transition: transform 0.5s ease, filter 0.3s;
-      display: block;
-    }
-    .work-still-item:hover .work-still-img-wrap img {
-      transform: scale(1.04);
-      filter: brightness(1);
-    }
-    .work-still-label {
-      font-size: 0.72rem;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-align: center;
-    }
-    .work-private {
-      border: 1px solid var(--border);
-      border-left: 2px solid var(--gold-dim);
-      padding: 2rem 2.5rem;
-      font-size: 0.82rem;
-      line-height: 2;
-      color: var(--text-muted);
-      background: var(--bg2);
-      margin-top: 3rem;
-    }
-    .work-private-note {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .work-private-item {
-      margin-bottom: 0.5rem;
-    }
-    .work-private-item strong {
-      color: var(--gold);
-      font-weight: 400;
-    }
-    .form-success {
-      text-align: center;
-      padding: 4rem 2rem;
-    }
-    .form-success-title {
-      font-family: var(--ff-display);
-      font-size: 2rem;
-      font-weight: 300;
-      color: var(--gold);
-      margin-bottom: 1rem;
-      letter-spacing: 0.1em;
-    }
-    .form-success-msg {
-      font-size: 0.9rem;
-      line-height: 2.2;
-      color: var(--text-muted);
+      .service-grid { grid-template-columns: 1fr; }
+      .work-private-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
+      header { padding: 1rem 1.5rem; }
+      header.scrolled { padding: 0.85rem 1.5rem; }
+      .nav-desktop { display: none; }
+      .menu-toggle { display: flex; }
+      .section-inner { padding: 5rem 1.5rem; }
+      #hero { padding: 0 1.5rem; }
+      .hero-scroll-hint { left: 1.5rem; }
+      .hero-num { display: none; }
+      .section-header {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .section-desc { text-align: left; max-width: 100%; }
       .work-video-grid { grid-template-columns: 1fr; }
       .work-still-grid { grid-template-columns: 1fr; }
+      .work-private { padding: 1.5rem; }
+      .service-card { padding: 2.5rem; }
+      .footer-inner {
+        grid-template-columns: 1fr;
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+      }
+      .footer-links { justify-content: center; }
+      .footer-copy { text-align: center; }
+      .form-row { grid-template-columns: 1fr; }
+      .stats-inner {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 1.5rem;
+      }
     }
     @media (min-width: 769px) and (max-width: 1024px) {
       .work-video-grid { grid-template-columns: repeat(2, 1fr); }
@@ -833,32 +1158,34 @@
 
 <body>
 
+  <!-- Loading screen -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-inner">
+      <div class="loading-logo-text">動画工房 port</div>
+      <div class="loading-bar-wrap"><div class="loading-bar"></div></div>
+    </div>
+  </div>
+
+  <!-- Scroll progress -->
+  <div class="scroll-progress" id="scroll-progress"></div>
+
   <!-- ── Header ── -->
   <header id="site-header">
-    <a href="#" class="logo" aria-label="動画工房 port">
-      <!-- lighthouse SVG — イラストアイコン風 -->
-      <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- 光線 左 -->
+    <a href="#" class="logo" aria-label="動画工房 port トップ">
+      <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <line x1="19" y1="8"  x2="7"  y2="4"  stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
         <line x1="18" y1="9"  x2="5"  y2="10" stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
         <line x1="18" y1="10" x2="6"  y2="16" stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- 光線 右 -->
         <line x1="25" y1="8"  x2="37" y2="4"  stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
         <line x1="26" y1="9"  x2="39" y2="10" stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
         <line x1="26" y1="10" x2="38" y2="16" stroke="#C9A86C" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- ランタン頂部（ドーム） -->
         <path d="M19 6 Q22 3 25 6" fill="#C9A86C"/>
-        <!-- ランタンルーム -->
         <rect x="18" y="6" width="8" height="6" rx="0.5" fill="#C9A86C"/>
-        <!-- ランタン下段プラットフォーム -->
         <rect x="16" y="12" width="12" height="2" fill="#C9A86C"/>
-        <!-- 塔本体（台形：上が細く下が広い） -->
         <path d="M18 14 L16 34 L28 34 L26 14 Z" fill="#C9A86C"/>
-        <!-- 塔の横縞（窓・装飾） -->
         <rect x="17.5" y="18" width="9" height="1.2" fill="#090909" opacity="0.35"/>
         <rect x="17"   y="23" width="10" height="1.2" fill="#090909" opacity="0.35"/>
         <rect x="16.5" y="28" width="11" height="1.2" fill="#090909" opacity="0.35"/>
-        <!-- 土台 -->
         <rect x="13" y="34" width="18" height="3" rx="0.5" fill="#C9A86C"/>
         <rect x="11" y="37" width="22" height="2" rx="0.5" fill="#C9A86C" opacity="0.6"/>
       </svg>
@@ -867,26 +1194,51 @@
         <span>Video Creator</span>
       </div>
     </a>
-    <nav>
+
+    <nav class="nav-desktop" aria-label="メインナビゲーション">
       <a href="#work">Work</a>
       <a href="#service">Service</a>
+      <a href="#skill">Skill</a>
       <a href="#profile">Profile</a>
       <a href="#contact" class="nav-cta">Contact</a>
-      <!-- Instagram -->
-      <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="header-sns" aria-label="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <a href="https://www.instagram.com/port_movie/" target="_blank" rel="noopener" class="header-sns" aria-label="Instagram">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="2" y="2" width="20" height="20" rx="5"/>
           <circle cx="12" cy="12" r="5"/>
           <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
         </svg>
       </a>
     </nav>
+
+    <button class="menu-toggle" id="menu-toggle" aria-label="メニュー" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </header>
 
+  <!-- Mobile nav overlay -->
+  <nav class="nav-mobile" id="nav-mobile" aria-label="モバイルナビゲーション">
+    <a href="#work">Work</a>
+    <a href="#service">Service</a>
+    <a href="#skill">Skill</a>
+    <a href="#profile">Profile</a>
+    <a href="#contact">Contact</a>
+    <div class="nav-mobile-sns">
+      <a href="https://www.instagram.com/port_movie/" target="_blank" rel="noopener" class="header-sns" aria-label="Instagram">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="2" width="20" height="20" rx="5"/>
+          <circle cx="12" cy="12" r="5"/>
+          <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </a>
+    </div>
+  </nav>
+
   <!-- ── Hero ── -->
-  <section id="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-line"></div>
+  <section id="hero" aria-label="ヒーロー">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-grid-lines" aria-hidden="true"></div>
     <div class="hero-content">
       <p class="hero-label">Freelance Video Creator — Kawagoe, Saitama</p>
       <h1 class="hero-title">動画工房<br><em>port</em></h1>
@@ -896,19 +1248,21 @@
         丁寧なヒアリングと確かな技術で、<br>
         ビジョンを映像に変えます。
       </p>
-      <a href="#contact" class="hero-cta">
-        ご依頼・お問い合わせ
-        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M2 7h10M8 3l4 4-4 4"/>
-        </svg>
-      </a>
+      <div class="hero-actions">
+        <a href="#contact" class="hero-cta">
+          ご依頼・お問い合わせ
+          <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+        </a>
+        <a href="#work" class="hero-link">実績を見る</a>
+      </div>
     </div>
-    <div class="hero-scroll" aria-hidden="true">
-      <div class="hero-scroll-line"></div>
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <div class="hero-scroll-bar"></div>
       Scroll
     </div>
     <div class="hero-num" aria-hidden="true">port</div>
   </section>
+
 
   <!-- ── Work ── -->
   <section id="work">
@@ -924,61 +1278,83 @@
           幅広い映像制作に対応します。
         </p>
       </div>
+
       <p class="work-sub-label reveal">Video Portfolio</p>
       <div class="work-video-grid">
 
         <div class="work-video-item reveal reveal-delay-1">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/NI4qZNsFHXU?si=qyVelowo8WOhPJxR" title="広告アニメーション" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="NI4qZNsFHXU">
+            <img class="video-thumb" src="https://img.youtube.com/vi/NI4qZNsFHXU/hqdefault.jpg" alt="広告アニメーション" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">広告アニメーション</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-2">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/-UYygZulUXU?si=42LrDSoG1HEd50bz" title="ビジネス動画ポートフォリオ" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="-UYygZulUXU">
+            <img class="video-thumb" src="https://img.youtube.com/vi/-UYygZulUXU/hqdefault.jpg" alt="ビジネス動画ポートフォリオ" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">ビジネス動画ポートフォリオ</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-3">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/RF5KWIzAupw?si=ga9JbNBWlxiIUzc1" title="イベント動画ポートフォリオ" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="RF5KWIzAupw">
+            <img class="video-thumb" src="https://img.youtube.com/vi/RF5KWIzAupw/hqdefault.jpg" alt="イベント動画ポートフォリオ" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">イベント動画ポートフォリオ</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-1">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/UX4flKIm190?si=d7pK4KuBM2K_gQeL" title="YouTubeビジネス動画" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="UX4flKIm190">
+            <img class="video-thumb" src="https://img.youtube.com/vi/UX4flKIm190/hqdefault.jpg" alt="YouTubeビジネス動画" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">YouTubeビジネス動画</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-2">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/pN92h1oJo94?si=wNdBckQ45jtVQNmE" title="YouTubeビジネス動画（バラエティ寄り）" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="pN92h1oJo94">
+            <img class="video-thumb" src="https://img.youtube.com/vi/pN92h1oJo94/hqdefault.jpg" alt="YouTubeビジネス動画（バラエティ寄り）" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">YouTubeビジネス動画（バラエティ寄り）</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-3">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/Dgzs14BQe_k?si=dKbLuzuhuXbvYLF_" title="YouTubeビジネス動画（講義系）" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="Dgzs14BQe_k">
+            <img class="video-thumb" src="https://img.youtube.com/vi/Dgzs14BQe_k/hqdefault.jpg" alt="YouTubeビジネス動画（講義系）" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">YouTubeビジネス動画（講義系）</p>
         </div>
 
         <div class="work-video-item reveal reveal-delay-1">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/QJIQNnbs7VQ?si=uB07xecQaNZOA9sh" title="イベントダイジェスト（習作）" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="video-wrapper" data-video-id="QJIQNnbs7VQ">
+            <img class="video-thumb" src="https://img.youtube.com/vi/QJIQNnbs7VQ/hqdefault.jpg" alt="イベントダイジェスト（習作）" loading="lazy">
+            <button class="video-play-btn" aria-label="動画を再生">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
           </div>
           <p class="work-video-label">イベントダイジェスト（習作）</p>
         </div>
 
       </div>
 
-      <p class="work-sub-label reveal">Still Works</p>
+      <p class="work-sub-label reveal" style="margin-top: 5rem;">Still Works</p>
       <div class="work-still-grid">
 
         <div class="work-still-item reveal reveal-delay-1">
@@ -1004,12 +1380,26 @@
 
       </div>
 
-      <div class="work-private reveal">
-        <p class="work-private-note">※実績公開はできないけど、実施経験があるを紹介（文字情報でごめんなさい🙇‍♀️）　詳細を知りたい方はぜひお問い合わせください！</p>
-        <div class="work-private-item"><strong>YouTubeビジネス動画</strong>：歯科医師、税理士、プログラミングエンジニア、不動産、IR系、動画編集スクール、スポーツジム治具の企業、オフィスツアー、英会話教室、せどりスクール</div>
-        <div class="work-private-item"><strong>Vlog</strong>：モデルさん、元サッカー選手</div>
-        <div class="work-private-item"><strong>会社総会・イベントPV・OP動画</strong>：IT企業、外資系製薬会社、不動産会社、Webマーケティング会社、保育園、出版会社</div>
-        <div class="work-private-item"><strong>その他</strong>：モデルルームのルームツアー、アニメーションの修正加工</div>
+      <div class="work-private reveal" style="margin-top: 5rem;">
+        <p class="work-private-title">Non-Public Works — ご参考までに実施経験のある案件をご紹介しています。詳細はお問い合わせください。</p>
+        <div class="work-private-grid">
+          <div class="work-private-item">
+            <strong>YouTubeビジネス動画</strong>
+            歯科医師、税理士、プログラミングエンジニア、不動産、IR系、動画編集スクール、スポーツジム、オフィスツアー、英会話教室、せどりスクール
+          </div>
+          <div class="work-private-item">
+            <strong>Vlog</strong>
+            モデルさん、元サッカー選手
+          </div>
+          <div class="work-private-item">
+            <strong>会社総会・イベントPV・OP動画</strong>
+            IT企業、外資系製薬会社、不動産会社、Webマーケティング会社、保育園、出版会社
+          </div>
+          <div class="work-private-item">
+            <strong>その他</strong>
+            モデルルームのルームツアー、アニメーションの修正加工
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1080,6 +1470,11 @@
           <p class="section-label">03 — Skill</p>
           <h2 class="section-title">スキル</h2>
         </div>
+        <p class="section-desc">
+          映像制作を中心に、<br>
+          デザインから撮影まで<br>
+          ワンストップで対応します。
+        </p>
       </div>
       <div class="skill-layout">
         <div class="skill-categories">
@@ -1115,23 +1510,27 @@
             </div>
           </div>
         </div>
-        <div class="skill-profile-side reveal reveal-delay-2">
+        <div class="skill-info-side reveal reveal-delay-2">
           <div class="skill-items-vertical">
             <div class="skill-item-row">
               <span class="skill-item-name">対応エリア</span>
-              <span>関東全域・全国出張対応可</span>
+              <span class="skill-item-val">関東全域・全国出張対応可</span>
             </div>
             <div class="skill-item-row">
               <span class="skill-item-name">フリーランス歴</span>
-              <span>2022年〜</span>
+              <span class="skill-item-val">2022年〜</span>
             </div>
             <div class="skill-item-row">
               <span class="skill-item-name">前職</span>
-              <span>電気エンジニア・プログラマ</span>
+              <span class="skill-item-val">電気エンジニア・プログラマ</span>
             </div>
             <div class="skill-item-row">
               <span class="skill-item-name">お返事目安</span>
-              <span>1〜2営業日以内</span>
+              <span class="skill-item-val">1〜2営業日以内</span>
+            </div>
+            <div class="skill-item-row">
+              <span class="skill-item-name">リモート対応</span>
+              <span class="skill-item-val">可</span>
             </div>
           </div>
         </div>
@@ -1144,12 +1543,10 @@
     <div class="section-inner">
       <div class="profile-layout">
         <div class="profile-img-wrap reveal">
-          <!-- プロフィール写真をここに差し替えてください -->
-          <!-- <img src="./images/profile.jpg" alt="森亜希代"> -->
           <img src="images/profile.jpg" alt="森 亜希代">
-          <div class="profile-img-frame"></div>
+          <div class="profile-img-frame" aria-hidden="true"></div>
         </div>
-        <div class="profile-content reveal reveal-delay-2">
+        <div class="reveal reveal-delay-2">
           <p class="section-label">04 — Profile</p>
           <h2 class="profile-name-ja">森 亜希代</h2>
           <p class="profile-name-en">Akiyo Mori — Freelance Video Creator</p>
@@ -1163,8 +1560,8 @@
             映像に変えることを大切にしています。
           </p>
           <div class="profile-links">
-            <a href="https://www.instagram.com/" target="_blank" rel="noopener" class="profile-link">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <a href="https://www.instagram.com/port_movie/" target="_blank" rel="noopener" class="profile-link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <rect x="2" y="2" width="20" height="20" rx="5"/>
                 <circle cx="12" cy="12" r="5"/>
                 <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
@@ -1191,7 +1588,7 @@
         </p>
       </div>
       <div class="contact-layout">
-        <div class="contact-info reveal">
+        <div class="reveal">
           <p class="contact-notice">
             お見積り・スケジュールのご確認だけでも
             お気軽にどうぞ。<br>
@@ -1212,12 +1609,6 @@
           </div>
         </div>
 
-        <!--
-          ★ フォームの送信先設定が必要です
-          Formspree (https://formspree.io) で無料アカウント作成後、
-          action属性の "https://formspree.io/f/XXXXXXXX" を
-          発行されたエンドポイントURLに差し替えてください
-        -->
         <form
           class="contact-form reveal reveal-delay-2"
           action="https://formspree.io/f/xbdqgbqo"
@@ -1226,7 +1617,7 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">お名前<span class="req">*</span></label>
-              <input type="text" name="name" class="form-input" required placeholder="山田 太郎">
+              <input type="text" name="name" class="form-input" required placeholder="山田 太郎" autocomplete="name">
             </div>
             <div class="form-group">
               <label class="form-label">ふりがな</label>
@@ -1236,11 +1627,11 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">会社名</label>
-              <input type="text" name="company" class="form-input" placeholder="株式会社〇〇">
+              <input type="text" name="company" class="form-input" placeholder="株式会社〇〇" autocomplete="organization">
             </div>
             <div class="form-group">
               <label class="form-label">Email<span class="req">*</span></label>
-              <input type="email" name="email" class="form-input" required placeholder="your@email.com">
+              <input type="email" name="email" class="form-input" required placeholder="your@email.com" autocomplete="email">
             </div>
           </div>
           <div class="form-group">
@@ -1273,7 +1664,10 @@
               <a href="#" target="_blank">プライバシーポリシー</a>に同意する
             </span>
           </label>
-          <button type="submit" class="form-submit">送信する</button>
+          <button type="submit" class="form-submit">
+            送信する
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+          </button>
         </form>
       </div>
     </div>
@@ -1281,34 +1675,131 @@
 
   <!-- ── Footer ── -->
   <footer>
-    <div class="footer-logo">動画工房 port</div>
-    <div class="footer-links">
-      <a href="#work">Work</a>
-      <a href="#service">Service</a>
-      <a href="#profile">Profile</a>
-      <a href="#contact">Contact</a>
+    <div class="footer-inner">
+      <div class="footer-logo">動画工房 port</div>
+      <div class="footer-links">
+        <a href="#work">Work</a>
+        <a href="#service">Service</a>
+        <a href="#skill">Skill</a>
+        <a href="#profile">Profile</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <p class="footer-copy">© 2024 動画工房 port. All rights reserved.</p>
     </div>
-    <p class="footer-copy">© 2024 動画工房 port. All rights reserved.</p>
   </footer>
 
-  <script>
-    // ── Header scroll ──
-    const header = document.getElementById('site-header');
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('scrolled', window.scrollY > 60);
-    }, { passive: true });
+  <!-- Scroll to top -->
+  <button class="scroll-top" id="scroll-top" aria-label="ページトップへ">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M8 12V4M4 8l4-4 4 4"/>
+    </svg>
+  </button>
 
-    // ── Scroll reveal ──
+  <script>
+    // ── Loading screen ──
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('hidden');
+      }, 900);
+    });
+
+    // ── Scroll progress ──
+    const progressBar = document.getElementById('scroll-progress');
+    function updateProgress() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.width = (scrollTop / docHeight * 100) + '%';
+    }
+
+    // ── Header scroll + active nav ──
+    const header = document.getElementById('site-header');
+    const sections = document.querySelectorAll('section[id], div.stats-strip');
+    const navLinks = document.querySelectorAll('.nav-desktop a[href^="#"]');
+    const scrollTopBtn = document.getElementById('scroll-top');
+
+    function onScroll() {
+      const y = window.scrollY;
+
+      // Header
+      header.classList.toggle('scrolled', y > 60);
+
+      // Progress
+      updateProgress();
+
+      // Scroll to top button
+      scrollTopBtn.classList.toggle('visible', y > 400);
+
+      // Active nav
+      let current = '';
+      document.querySelectorAll('section[id]').forEach(sec => {
+        if (y >= sec.offsetTop - 120) current = sec.id;
+      });
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // ── Scroll to top ──
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // ── Reveal on scroll ──
     const revealEls = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
+    const revealObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('visible');
-          observer.unobserve(e.target);
+          revealObserver.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    revealEls.forEach(el => observer.observe(el));
+    }, { threshold: 0.1, rootMargin: '0px 0px -48px 0px' });
+    revealEls.forEach(el => revealObserver.observe(el));
+
+    // ── Hamburger menu ──
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMobile = document.getElementById('nav-mobile');
+
+    function openMenu() {
+      menuToggle.classList.add('open');
+      menuToggle.setAttribute('aria-expanded', 'true');
+      navMobile.classList.add('open');
+      document.body.classList.add('menu-open');
+    }
+    function closeMenu() {
+      menuToggle.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      navMobile.classList.remove('open');
+      document.body.classList.remove('menu-open');
+    }
+
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.contains('open') ? closeMenu() : openMenu();
+    });
+
+    navMobile.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', closeMenu);
+    });
+
+    // Close menu on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeMenu();
+    });
+
+    // ── YouTube click-to-play ──
+    document.querySelectorAll('.video-wrapper[data-video-id]').forEach(wrap => {
+      wrap.addEventListener('click', () => {
+        const id = wrap.dataset.videoId;
+        wrap.innerHTML = `<iframe
+          src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0"
+          title="YouTube video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>`;
+      });
+    });
 
     // ── Contact form (Formspree AJAX) ──
     const contactForm = document.querySelector('.contact-form');
@@ -1317,14 +1808,14 @@
         e.preventDefault();
         const submitBtn = contactForm.querySelector('.form-submit');
         submitBtn.disabled = true;
-        submitBtn.textContent = '送信中...';
+        submitBtn.innerHTML = '送信中…';
         try {
-          const response = await fetch(contactForm.action, {
+          const res = await fetch(contactForm.action, {
             method: 'POST',
             body: new FormData(contactForm),
             headers: { 'Accept': 'application/json' }
           });
-          if (response.ok) {
+          if (res.ok) {
             contactForm.innerHTML = `
               <div class="form-success">
                 <p class="form-success-title">Thank you.</p>
@@ -1332,17 +1823,16 @@
               </div>`;
           } else {
             submitBtn.disabled = false;
-            submitBtn.textContent = '送信する';
+            submitBtn.innerHTML = '送信する <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" width="13" height="13"><path d="M2 7h10M8 3l4 4-4 4"/></svg>';
             alert('送信に失敗しました。しばらくしてからもう一度お試しください。');
           }
-        } catch (err) {
+        } catch {
           submitBtn.disabled = false;
-          submitBtn.textContent = '送信する';
+          submitBtn.innerHTML = '送信する';
           alert('通信エラーが発生しました。しばらくしてからもう一度お試しください。');
         }
       });
     }
   </script>
-
 </body>
 </html>
